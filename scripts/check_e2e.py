@@ -63,9 +63,13 @@ def check_api_migration(root: Path) -> list:
 CHECKS = {"idempotent-job": check_idempotent_job, "api-migration": check_api_migration}
 
 
+WORKER_RULES = "You work for the operator"  # first line of skills/kstack-mode/worker.md
+
+
 def trace(stream: str):
-    """Return (subagent types spawned, risky git commands as (in_subagent, command), final text)."""
-    agents, risky, final = [], [], ""
+    """Return (subagent types spawned, risky git commands as (in_subagent, command), final text,
+    whether any subagent's tool output contained worker.md)."""
+    agents, risky, final, rules_read = [], [], "", False
     for line in stream.splitlines():
         try:
             event = json.loads(line)
@@ -82,9 +86,15 @@ def trace(stream: str):
                 for line_ in command.splitlines():
                     if RISKY_GIT.search(line_):
                         risky.append((in_subagent, line_.strip()[:120]))
+        elif event.get("type") == "user" and event.get("parent_tool_use_id") is not None:
+            for block in event["message"].get("content", []):
+                if isinstance(block, dict) and block.get("type") == "tool_result":
+                    content = block.get("content", "")
+                    text = content if isinstance(content, str) else "\n".join(c.get("text", "") for c in content if isinstance(c, dict))
+                    rules_read = rules_read or WORKER_RULES in text
         elif event.get("type") == "result":
             final = event.get("result") or ""
-    return agents, risky, final
+    return agents, risky, final, rules_read
 
 
 def diff_size(root: Path):
@@ -119,10 +129,12 @@ def run(name: str, keep: bool) -> dict:
             cwd=root, capture_output=True, text=True, timeout=1500,
         )
         (root / "stream.jsonl").write_text(proc.stdout)
-        agents, risky, final = trace(proc.stdout)
+        agents, risky, final, rules_read = trace(proc.stdout)
         commits = subprocess.run(["git", "rev-list", "--count", "HEAD"], cwd=root, capture_output=True, text=True).stdout.strip()
         branch = subprocess.run(["git", "branch", "--show-current"], cwd=root, capture_output=True, text=True).stdout.strip()
         problems = CHECKS[name](root) + verifier_problems(root, agents, final)
+        if agents and not rules_read:
+            problems.append("a subagent ran without reading worker.md")
         if any(sub for sub, _ in risky):
             problems.append(f"a subagent changed git state: {[c for sub, c in risky if sub]}")
         if any("push" in c for _, c in risky):
