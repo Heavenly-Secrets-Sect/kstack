@@ -6,7 +6,18 @@ Bộ workflow để code cùng agent trong Claude Code, đóng gói thành một
 
 Lấy cảm hứng từ [pstack](https://github.com/cursor/plugins/tree/main/pstack) của Lauren Tan ([@poteto](https://github.com/poteto)). pstack viết cho Cursor; kstack học lại các ý tưởng đó và viết lại bằng lời của mình cho Claude Code, không chép nguyên.
 
-> **Trạng thái:** mới dựng khung. Các skill đang được viết dần theo lộ trình bên dưới.
+> **Trạng thái:** đã có workflow dùng chung (A1–A5). Phần gắn vào từng project đang làm tiếp.
+
+## Dùng
+
+| Lệnh | Việc làm |
+|---|---|
+| `/kstack:kstack-mode <task>` | Làm task theo kiểu kstack: nhắc lại mục tiêu, chọn playbook (investigation, bug fix, feature), áp dụng principle, giao việc cho `kstack-worker`, nhờ `kstack-verifier` mới kiểm tra, commit nhỏ, không push khi chưa hỏi |
+| `/kstack:sharpen <task>` | Viết lại prompt để task sâu hơn (không to hơn), dừng lại cho bạn duyệt |
+| `/kstack:in-your-own-words <task>` | Nhắc lại mục tiêu, vấn đề, phạm vi và cách làm trước khi bắt tay vào |
+| `/kstack:principle-<tên>` | Áp dụng riêng một principle, ví dụ `principle-explain-the-number` trước khi báo cáo một con số |
+
+Principle có sẵn: `prove-it-works`, `fix-root-causes`, `attack-the-premise`, `smallest-change`, `verifiable-steps`, `explain-the-number`, `encode-lessons-in-structure`, `proceed-on-reversible-work`.
 
 ## Ý tưởng chính
 
@@ -29,11 +40,20 @@ Gần như mọi skill đặt `disable-model-invocation: true`: chỉ chạy khi
 ```
 kstack/
 ├── .claude-plugin/plugin.json   # manifest của plugin
-├── skills/<tên>/SKILL.md        # mỗi skill một thư mục
-├── agents/<tên>.md              # subagent
-├── hooks/hooks.json             # (sau) hook dùng chung
-├── evals/                       # (sau) eval cho skill, chạy bằng `claude plugin eval`
-└── assets/                      # icon và script vẽ icon
+├── skills/
+│   ├── in-your-own-words/       # lõi
+│   ├── sharpen/                 # lõi
+│   ├── principle-*/             # lõi: 8 principle dạng skill lá
+│   └── kstack-mode/             # điều phối
+│       ├── SKILL.md             #   việc bắt buộc, mục lục principle, tự chủ, subagent
+│       ├── worker.md            #   luật cho mọi subagent, brief nào cũng bắt đọc trước
+│       └── playbooks/           #   investigation, bug-fix, feature
+├── agents/
+│   ├── kstack-worker.md         # viết code theo brief
+│   └── kstack-verifier.md       # kiểm tra độc lập, chỉ đọc (không có Edit/Write)
+├── evals/                       # eval cho skill, chạy bằng `claude plugin eval`
+├── assets/                      # icon và script vẽ icon
+└── CLAUDE.md                    # luật khi sửa chính kstack
 ```
 
 ## Cài đặt
@@ -64,11 +84,11 @@ claude plugin details kstack@skills-dir   # thành phần và số token tốn t
 
 ## Lộ trình
 
-- [ ] **A1.** Skill nhỏ gọi bằng tay: `in-your-own-words`, `sharpen`
-- [ ] **A2.** 3–5 principle dạng skill lá
-- [ ] **A3.** `kstack-mode`: việc bắt buộc, mục lục principle, playbook (bug-fix, feature, investigation)
-- [ ] **A4.** `worker.md` và agent để truyền luật xuống subagent
-- [ ] **A5.** Eval cho skill: rubric, model khác chấm, so với nhánh không dùng plugin
+- [x] **A1.** Skill nhỏ gọi bằng tay: `in-your-own-words`, `sharpen`
+- [x] **A2.** 8 principle dạng skill lá
+- [x] **A3.** `kstack-mode`: việc bắt buộc, mục lục principle, playbook (bug-fix, feature, investigation)
+- [x] **A4.** `worker.md` và hai agent `kstack-worker`, `kstack-verifier`
+- [x] **A5.** Eval cho `sharpen`: có kstack 1.00 so với 0.43 và 0.67 khi không có (2 case, mỗi case 2 lần chạy)
 
 Sau đó là phần gắn vào từng project: verification skill, hook lint/typecheck, verifier mới cho mỗi PR, rồi tăng dần mức tự động.
 
