@@ -53,6 +53,8 @@ kstack/
 ├── agents/
 │   ├── kstack-worker.md         # writes code from a brief
 │   └── kstack-verifier.md       # independent, read-only check (no Edit/Write)
+├── hooks/                       # PreToolUse guard: asks before any `git push`
+├── tests/                       # unit tests for the hook
 ├── evals/                       # skill evals, run with `claude plugin eval`
 ├── scripts/check_routing.py     # checks the mode routes tasks to the right playbook and principles
 ├── scripts/check_e2e.py         # runs the mode for real and checks the outcome independently
@@ -88,7 +90,12 @@ claude plugin details kstack@skills-dir   # components and per-session token cos
 claude plugin eval . --runs 2 --no-publish   # evals, with a no-plugin baseline
 python3 scripts/check_routing.py          # routing: 8 scenarios, playbook and principles read
 python3 scripts/check_e2e.py              # end to end: real edits and commits, outcome checked by running the code
+python3 -m unittest discover -s tests     # hook unit tests
 ```
+
+## Enforced, not just asked
+
+kstack ships one hook. Any Bash call that runs `git push` gets a permission prompt, so "never push without a yes" no longer depends on the model remembering it. Measured headless: without the hook a push in bypass mode reached the remote; with it, the push was stopped in both default and bypass mode. The verifier's lack of Edit and Write tools is the other structural guard.
 
 ## Roadmap
 
@@ -98,6 +105,7 @@ python3 scripts/check_e2e.py              # end to end: real edits and commits, 
 - [x] **A4.** `worker.md` and two agents, `kstack-worker` and `kstack-verifier`
 - [x] **A5.** Evals for `sharpen`: 1.00 with kstack versus 0.43 and 0.67 without (2 cases, 2 runs each)
 - [x] **A6.** 14 more principles (design, operations and migration, delegation, testing), refactoring and multi-phase-plan playbooks, a routing check (8/8 scenarios) and an end-to-end check (2/2)
+- [x] **A7.** Push guard hook with unit tests and a controlled experiment; the verifier now refuses to work without `worker.md`
 
 Next is per-project integration: verification skills, lint/typecheck hooks, a fresh verifier per PR, then gradually more autonomy.
 

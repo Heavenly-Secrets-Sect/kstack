@@ -50,6 +50,8 @@ Calling one directly is useful as a review lens, for example:
 
 ## Autonomy
 
+kstack's hook asks you before any `git push`, in every session where the plugin is enabled. In a headless run (`claude -p`) there is no one to ask, so the push is refused.
+
 - Reversible work (editing, local commits) proceeds without asking.
 - Pushing, deploying, deleting data and messaging people always wait for your yes.
 - Say "run until done" or "I'm going to bed" to keep it going until one of those gates.

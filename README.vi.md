@@ -53,6 +53,8 @@ kstack/
 ├── agents/
 │   ├── kstack-worker.md         # viết code theo brief
 │   └── kstack-verifier.md       # kiểm tra độc lập, chỉ đọc (không có Edit/Write)
+├── hooks/                       # hook PreToolUse: hỏi trước mọi lệnh `git push`
+├── tests/                       # unit test cho hook
 ├── evals/                       # eval cho skill, chạy bằng `claude plugin eval`
 ├── scripts/check_routing.py     # kiểm tra mode chọn đúng playbook và principle
 ├── scripts/check_e2e.py         # chạy mode thật rồi tự kiểm tra kết quả bằng cách chạy code
@@ -88,7 +90,12 @@ claude plugin details kstack@skills-dir   # thành phần và số token tốn t
 claude plugin eval . --runs 2 --no-publish   # eval, có nhánh không dùng plugin để so
 python3 scripts/check_routing.py          # định tuyến: 8 tình huống, playbook và principle được đọc
 python3 scripts/check_e2e.py              # end-to-end: sửa và commit thật, kết quả được kiểm bằng cách chạy code
+python3 -m unittest discover -s tests     # unit test cho hook
 ```
+
+## Thực thi bằng cấu trúc, không chỉ dặn bằng lời
+
+kstack có một hook: lệnh Bash nào chạy `git push` cũng phải qua hộp xác nhận, nên luật "không push khi chưa được đồng ý" không còn phụ thuộc vào việc model nhớ. Đo ở chế độ headless: không có hook, lệnh push ở chế độ bypass đi thẳng lên remote; có hook, push bị chặn ở cả chế độ mặc định lẫn bypass. Verifier không có tool Edit và Write là lớp bảo vệ bằng cấu trúc thứ hai.
 
 ## Lộ trình
 
@@ -98,6 +105,7 @@ python3 scripts/check_e2e.py              # end-to-end: sửa và commit thật,
 - [x] **A4.** `worker.md` và hai agent `kstack-worker`, `kstack-verifier`
 - [x] **A5.** Eval cho `sharpen`: có kstack 1.00 so với 0.43 và 0.67 khi không có (2 case, mỗi case 2 lần chạy)
 - [x] **A6.** Thêm 14 principle (thiết kế, vận hành và migration, điều phối, kiểm thử), playbook refactoring và multi-phase-plan, bài kiểm tra định tuyến (8/8 tình huống) và kiểm tra end-to-end (2/2)
+- [x] **A7.** Hook chặn push, có unit test và thí nghiệm đối chứng; verifier từ chối làm việc nếu không có `worker.md`
 
 Sau đó là phần gắn vào từng project: verification skill, hook lint/typecheck, verifier mới cho mỗi PR, rồi tăng dần mức tự động.
 

@@ -31,11 +31,16 @@ claude -p "/kstack:<skill> <sample task>"       # try a skill from a scratch dir
 claude plugin eval . --runs 2 --no-publish      # evals, with a no-plugin baseline
 python3 scripts/check_routing.py                # every scenario must route to its playbook and principles
 python3 scripts/check_e2e.py                    # real runs; outcome, verifier rule and git safety checked
+python3 -m unittest discover -s tests           # hook unit tests
 ```
 
 Which layer to run: `sharpen` changes need the evals; mode, playbook or principle changes need the routing check; agent, `worker.md`, commit or verifier rule changes need the end-to-end check. LLM runs vary, so run a check twice before trusting a pass. When a check fails, first confirm the check itself is right by re-grading a kept run (`--keep`) offline.
 
 After changing a skill that has evals, rerun them (`--case <name>`). The with-plugin score must not drop.
+
+## Hooks
+
+`hooks/hooks.json` registers `hooks/guard_push.py` (PreToolUse, Bash): any command that runs `git push` gets permissionDecision "ask". It applies in every session where kstack is enabled, not only during kstack-mode. Change the detector only with a unit test in `tests/test_guard_push.py` for the new case.
 
 ## Commits
 
