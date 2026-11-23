@@ -97,12 +97,13 @@ python3 -m unittest discover -s tests     # hook unit tests
 
 kstack ships one hook, so "never push without a yes" no longer depends on the model remembering it. Any Bash call that runs `git push` is gated by permission mode:
 
-| Mode | Hook decision | What you see |
-|---|---|---|
-| default, acceptEdits, plan | ask | A permission prompt |
-| bypassPermissions, auto | deny | The push is blocked. Push yourself with `! git push` |
+| Mode | What you see |
+|---|---|
+| default, acceptEdits, plan | A permission prompt before the push |
+| bypassPermissions, auto | Nothing: these modes approve the hook's "ask" silently (measured), so the push goes through |
+| headless (`claude -p`) | The push is refused |
 
-Measured: bypass and auto mode approve an "ask" without showing it, so those modes get "deny". Without hooks, a push reached the remote in bypass and auto mode; with the hook it did not. The verifier's lack of Edit and Write tools is the other structural guard.
+Known gap: in bypass and auto mode the rule is still only a prompt to the model. Denying there was tried and works, but it is left out until it is wanted globally. The verifier's lack of Edit and Write tools is the other structural guard.
 
 ## Roadmap
 

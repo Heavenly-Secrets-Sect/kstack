@@ -40,7 +40,7 @@ After changing a skill that has evals, rerun them (`--case <name>`). The with-pl
 
 ## Hooks
 
-`hooks/hooks.json` registers `hooks/guard_push.py` (PreToolUse, Bash): a command that runs `git push` gets "ask", except in bypassPermissions and auto mode, which approve "ask" silently, so there it gets "deny" and the operator pushes with `! git push`. A changed script takes effect on its next call; a changed `hooks.json` needs a new session. It applies in every session where kstack is enabled, not only during kstack-mode. Change the detector only with a unit test in `tests/test_guard_push.py` for the new case.
+`hooks/hooks.json` registers `hooks/guard_push.py` (PreToolUse, Bash): a command that runs `git push` gets "ask". Only modes that show prompts (default, acceptEdits, plan) actually ask; bypassPermissions and auto approve it silently, measured. Denying in those modes worked (commit 5f0d7a1) but is off until it is wanted globally. A changed script takes effect on its next call; a changed `hooks.json` needs a new session. It applies in every session where kstack is enabled, not only during kstack-mode. Change the detector only with a unit test in `tests/test_guard_push.py` for the new case.
 
 ## Commits
 

@@ -50,7 +50,7 @@ Calling one directly is useful as a review lens, for example:
 
 ## Autonomy
 
-kstack's hook gates every `git push`, in every session where the plugin is enabled. In default mode you get a permission prompt. In bypass and auto mode the push is refused, because those modes would approve it without asking you; push yourself with `! git push`. In a headless run (`claude -p`) the push is refused too.
+kstack's hook gates every `git push`, in every session where the plugin is enabled. In default mode you get a permission prompt. Bypass and auto mode approve the prompt without showing it, so there the rule is only an instruction to the model. In a headless run (`claude -p`) the push is refused.
 
 - Reversible work (editing, local commits) proceeds without asking.
 - Pushing, deploying, deleting data and messaging people always wait for your yes.

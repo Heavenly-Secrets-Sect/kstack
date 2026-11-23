@@ -47,14 +47,8 @@ class GuardPush(unittest.TestCase):
             with self.subTest(cmd=cmd):
                 self.assertIsNone(decision(cmd))
 
-    def test_denies_in_modes_that_skip_the_prompt(self):
-        for mode in ("bypassPermissions", "auto"):
-            with self.subTest(mode=mode):
-                self.assertEqual(decision("git push", mode=mode), "deny")
-                self.assertIsNone(decision("git status", mode=mode))
-
-    def test_asks_in_modes_that_show_the_prompt(self):
-        for mode in ("default", "acceptEdits", "plan", None):
+    def test_asks_in_every_permission_mode(self):
+        for mode in ("default", "acceptEdits", "plan", "bypassPermissions", "auto", None):
             with self.subTest(mode=mode):
                 self.assertEqual(decision("git push", mode=mode), "ask")
 
