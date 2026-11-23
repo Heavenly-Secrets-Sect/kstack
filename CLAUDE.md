@@ -19,17 +19,21 @@ Write everything in English: skills, agents, playbooks, docs, code comments and 
 - Default to `disable-model-invocation: true`. The Skill tool refuses such skills, so the mode reads them by path: `${CLAUDE_SKILL_DIR}/../<name>/SKILL.md`.
 - `${CLAUDE_SKILL_DIR}` and `$ARGUMENTS` are substituted only in `SKILL.md`, not in playbooks or `worker.md`.
 - Rewrite ideas in your own words; do not copy pstack text. Anything copied must carry pstack's MIT notice.
-- A new principle also needs a line in the index in `skills/kstack-mode/SKILL.md`.
+- A new principle needs a `# Title` line, a line in the index in `skills/kstack-mode/SKILL.md`, a mention in the playbook steps where it matters, and a routing scenario in `scripts/check_routing.py`.
 - When an agent repeats a mistake, fix it with structure first (tool limits, a specific rule with an alternative), then wording. Example: the verifier once ran `git checkout`, so it now has an explicit ban with the alternative spelled out.
 
 ## Checks before committing
 
 ```bash
 claude plugin validate .                        # structure is valid
-claude plugin details kstack@skills-dir         # per-session token cost (about 850 now)
+claude plugin details kstack@skills-dir         # components; hand-invoked skills are not shown to the model
 claude -p "/kstack:<skill> <sample task>"       # try a skill from a scratch directory
 claude plugin eval . --runs 2 --no-publish      # evals, with a no-plugin baseline
+python3 scripts/check_routing.py                # every scenario must route to its playbook and principles
+python3 scripts/check_e2e.py                    # real runs; outcome, verifier rule and git safety checked
 ```
+
+Which layer to run: `sharpen` changes need the evals; mode, playbook or principle changes need the routing check; agent, `worker.md`, commit or verifier rule changes need the end-to-end check. LLM runs vary, so run a check twice before trusting a pass. When a check fails, first confirm the check itself is right by re-grading a kept run (`--keep`) offline.
 
 After changing a skill that has evals, rerun them (`--case <name>`). The with-plugin score must not drop.
 

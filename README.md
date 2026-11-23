@@ -14,12 +14,12 @@ Inspired by [pstack](https://github.com/cursor/plugins/tree/main/pstack) by Laur
 
 | Command | What it does |
 |---|---|
-| `/kstack:kstack-mode <task>` | Work in kstack style: restate the goal, pick a playbook (investigation, bug fix, feature), apply the principles, delegate to `kstack-worker`, have a fresh `kstack-verifier` check the result, commit in small steps, never push without asking |
+| `/kstack:kstack-mode <task>` | Work in kstack style: restate the goal, pick a playbook (investigation, bug fix, feature, refactoring, multi-phase plan), apply the principles, delegate to `kstack-worker`, have a fresh `kstack-verifier` check the result, commit in small steps, never push without asking |
 | `/kstack:sharpen <task>` | Rewrite a prompt so the task goes deeper, not bigger, then stop for your review |
 | `/kstack:in-your-own-words <task>` | Play back the goal, problem, scope and plan before starting |
 | `/kstack:principle-<name>` | Apply a single principle, e.g. `principle-explain-the-number` before reporting a number |
 
-Available principles: `prove-it-works`, `fix-root-causes`, `attack-the-premise`, `smallest-change`, `verifiable-steps`, `explain-the-number`, `encode-lessons-in-structure`, `proceed-on-reversible-work`.
+22 principles in six groups (core, design, operations and migration, verification, delegation, meta). See the [guide](docs/guide.md) for the full list, when each applies and how to extend kstack.
 
 ## Core ideas
 
@@ -45,15 +45,18 @@ kstack/
 ├── skills/
 │   ├── in-your-own-words/       # core
 │   ├── sharpen/                 # core
-│   ├── principle-*/             # core: 8 principles as leaf skills
+│   ├── principle-*/             # core: 22 principles as leaf skills
 │   └── kstack-mode/             # orchestration
 │       ├── SKILL.md             #   non-negotiables, principle index, autonomy, subagents
 │       ├── worker.md            #   rules every subagent brief makes it read first
-│       └── playbooks/           #   investigation, bug-fix, feature
+│       └── playbooks/           #   investigation, bug-fix, feature, refactoring, multi-phase-plan
 ├── agents/
 │   ├── kstack-worker.md         # writes code from a brief
 │   └── kstack-verifier.md       # independent, read-only check (no Edit/Write)
 ├── evals/                       # skill evals, run with `claude plugin eval`
+├── scripts/check_routing.py     # checks the mode routes tasks to the right playbook and principles
+├── scripts/check_e2e.py         # runs the mode for real and checks the outcome independently
+├── docs/guide.md                # how to use and extend kstack
 ├── assets/                      # icon and the script that draws it
 └── CLAUDE.md                    # rules for editing kstack itself
 ```
@@ -83,6 +86,8 @@ claude plugin validate .                  # plugin structure is valid
 claude plugin list                        # should show kstack@skills-dir ✔ loaded
 claude plugin details kstack@skills-dir   # components and per-session token cost
 claude plugin eval . --runs 2 --no-publish   # evals, with a no-plugin baseline
+python3 scripts/check_routing.py          # routing: 8 scenarios, playbook and principles read
+python3 scripts/check_e2e.py              # end to end: real edits and commits, outcome checked by running the code
 ```
 
 ## Roadmap
@@ -92,6 +97,7 @@ claude plugin eval . --runs 2 --no-publish   # evals, with a no-plugin baseline
 - [x] **A3.** `kstack-mode`: non-negotiables, principle index, playbooks (bug-fix, feature, investigation)
 - [x] **A4.** `worker.md` and two agents, `kstack-worker` and `kstack-verifier`
 - [x] **A5.** Evals for `sharpen`: 1.00 with kstack versus 0.43 and 0.67 without (2 cases, 2 runs each)
+- [x] **A6.** 14 more principles (design, operations and migration, delegation, testing), refactoring and multi-phase-plan playbooks, a routing check (8/8 scenarios) and an end-to-end check (2/2)
 
 Next is per-project integration: verification skills, lint/typecheck hooks, a fresh verifier per PR, then gradually more autonomy.
 

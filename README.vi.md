@@ -14,12 +14,12 @@ Lấy cảm hứng từ [pstack](https://github.com/cursor/plugins/tree/main/pst
 
 | Lệnh | Việc làm |
 |---|---|
-| `/kstack:kstack-mode <task>` | Làm task theo kiểu kstack: nhắc lại mục tiêu, chọn playbook (investigation, bug fix, feature), áp dụng principle, giao việc cho `kstack-worker`, nhờ `kstack-verifier` mới kiểm tra, commit nhỏ, không push khi chưa hỏi |
+| `/kstack:kstack-mode <task>` | Làm task theo kiểu kstack: nhắc lại mục tiêu, chọn playbook (investigation, bug fix, feature, refactoring, multi-phase plan), áp dụng principle, giao việc cho `kstack-worker`, nhờ `kstack-verifier` mới kiểm tra, commit nhỏ, không push khi chưa hỏi |
 | `/kstack:sharpen <task>` | Viết lại prompt để task sâu hơn (không to hơn), dừng lại cho bạn duyệt |
 | `/kstack:in-your-own-words <task>` | Nhắc lại mục tiêu, vấn đề, phạm vi và cách làm trước khi bắt tay vào |
 | `/kstack:principle-<tên>` | Áp dụng riêng một principle, ví dụ `principle-explain-the-number` trước khi báo cáo một con số |
 
-Principle có sẵn: `prove-it-works`, `fix-root-causes`, `attack-the-premise`, `smallest-change`, `verifiable-steps`, `explain-the-number`, `encode-lessons-in-structure`, `proceed-on-reversible-work`.
+22 principle chia 6 nhóm (core, design, operations and migration, verification, delegation, meta). Danh sách đầy đủ, khi nào dùng và cách mở rộng có trong [hướng dẫn](docs/guide.md) (tiếng Anh).
 
 ## Ý tưởng chính
 
@@ -45,15 +45,18 @@ kstack/
 ├── skills/
 │   ├── in-your-own-words/       # lõi
 │   ├── sharpen/                 # lõi
-│   ├── principle-*/             # lõi: 8 principle dạng skill lá
+│   ├── principle-*/             # lõi: 22 principle dạng skill lá
 │   └── kstack-mode/             # điều phối
 │       ├── SKILL.md             #   việc bắt buộc, mục lục principle, tự chủ, subagent
 │       ├── worker.md            #   luật cho mọi subagent, brief nào cũng bắt đọc trước
-│       └── playbooks/           #   investigation, bug-fix, feature
+│       └── playbooks/           #   investigation, bug-fix, feature, refactoring, multi-phase-plan
 ├── agents/
 │   ├── kstack-worker.md         # viết code theo brief
 │   └── kstack-verifier.md       # kiểm tra độc lập, chỉ đọc (không có Edit/Write)
 ├── evals/                       # eval cho skill, chạy bằng `claude plugin eval`
+├── scripts/check_routing.py     # kiểm tra mode chọn đúng playbook và principle
+├── scripts/check_e2e.py         # chạy mode thật rồi tự kiểm tra kết quả bằng cách chạy code
+├── docs/guide.md                # hướng dẫn dùng và mở rộng kstack
 ├── assets/                      # icon và script vẽ icon
 └── CLAUDE.md                    # luật khi sửa chính kstack
 ```
@@ -83,6 +86,8 @@ claude plugin validate .            # cấu trúc plugin hợp lệ
 claude plugin list                  # phải thấy kstack@skills-dir ✔ loaded
 claude plugin details kstack@skills-dir   # thành phần và số token tốn thêm mỗi phiên
 claude plugin eval . --runs 2 --no-publish   # eval, có nhánh không dùng plugin để so
+python3 scripts/check_routing.py          # định tuyến: 8 tình huống, playbook và principle được đọc
+python3 scripts/check_e2e.py              # end-to-end: sửa và commit thật, kết quả được kiểm bằng cách chạy code
 ```
 
 ## Lộ trình
@@ -92,6 +97,7 @@ claude plugin eval . --runs 2 --no-publish   # eval, có nhánh không dùng plu
 - [x] **A3.** `kstack-mode`: việc bắt buộc, mục lục principle, playbook (bug-fix, feature, investigation)
 - [x] **A4.** `worker.md` và hai agent `kstack-worker`, `kstack-verifier`
 - [x] **A5.** Eval cho `sharpen`: có kstack 1.00 so với 0.43 và 0.67 khi không có (2 case, mỗi case 2 lần chạy)
+- [x] **A6.** Thêm 14 principle (thiết kế, vận hành và migration, điều phối, kiểm thử), playbook refactoring và multi-phase-plan, bài kiểm tra định tuyến (8/8 tình huống) và kiểm tra end-to-end (2/2)
 
 Sau đó là phần gắn vào từng project: verification skill, hook lint/typecheck, verifier mới cho mỗi PR, rồi tăng dần mức tự động.
 
