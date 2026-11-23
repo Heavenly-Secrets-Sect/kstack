@@ -8,5 +8,6 @@
     "email": "kietnt0603@gmail.com"
   },
   "repository": "https://github.com/Heavenly-Secrets-Sect/kstack",
-  "icon": "assets/icon.png"
+  "icon": "assets/icon.png",
+  "license": "MIT"
 }
