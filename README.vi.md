@@ -95,7 +95,14 @@ python3 -m unittest discover -s tests     # unit test cho hook
 
 ## Thực thi bằng cấu trúc, không chỉ dặn bằng lời
 
-kstack có một hook: lệnh Bash nào chạy `git push` cũng phải qua hộp xác nhận, nên luật "không push khi chưa được đồng ý" không còn phụ thuộc vào việc model nhớ. Đo ở chế độ headless: không có hook, lệnh push ở chế độ bypass đi thẳng lên remote; có hook, push bị chặn ở cả chế độ mặc định lẫn bypass. Verifier không có tool Edit và Write là lớp bảo vệ bằng cấu trúc thứ hai.
+kstack có một hook, nên luật "không push khi chưa được đồng ý" không còn phụ thuộc vào việc model nhớ. Lệnh Bash nào chạy `git push` cũng được xử lý theo chế độ quyền:
+
+| Chế độ | Hook quyết định | Bạn thấy gì |
+|---|---|---|
+| default, acceptEdits, plan | ask | Hộp xác nhận |
+| bypassPermissions, auto | deny | Push bị chặn. Tự push bằng `! git push` |
+
+Đã đo: chế độ bypass và auto tự duyệt quyết định "ask" mà không hiện hộp hỏi, nên ở hai chế độ đó hook trả "deny". Không có hook thì push lên được remote ở cả bypass và auto; có hook thì không. Verifier không có tool Edit và Write là lớp bảo vệ bằng cấu trúc thứ hai.
 
 ## Lộ trình
 

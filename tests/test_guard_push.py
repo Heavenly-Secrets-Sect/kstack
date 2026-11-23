@@ -7,8 +7,8 @@ from pathlib import Path
 HOOK = Path(__file__).resolve().parent.parent / "hooks" / "guard_push.py"
 
 
-def decision(command: str, tool: str = "Bash"):
-    event = {"tool_name": tool, "tool_input": {"command": command}}
+def decision(command: str, tool: str = "Bash", mode: str = "default"):
+    event = {"tool_name": tool, "tool_input": {"command": command}, "permission_mode": mode}
     out = subprocess.run([sys.executable, str(HOOK)], input=json.dumps(event), capture_output=True, text=True, check=True).stdout
     return json.loads(out)["hookSpecificOutput"]["permissionDecision"] if out.strip() else None
 
@@ -46,6 +46,17 @@ class GuardPush(unittest.TestCase):
         ]:
             with self.subTest(cmd=cmd):
                 self.assertIsNone(decision(cmd))
+
+    def test_denies_in_modes_that_skip_the_prompt(self):
+        for mode in ("bypassPermissions", "auto"):
+            with self.subTest(mode=mode):
+                self.assertEqual(decision("git push", mode=mode), "deny")
+                self.assertIsNone(decision("git status", mode=mode))
+
+    def test_asks_in_modes_that_show_the_prompt(self):
+        for mode in ("default", "acceptEdits", "plan", None):
+            with self.subTest(mode=mode):
+                self.assertEqual(decision("git push", mode=mode), "ask")
 
     def test_ignores_other_tools(self):
         self.assertIsNone(decision("git push", tool="Read"))
