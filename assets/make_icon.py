@@ -1,18 +1,18 @@
-"""Vẽ icon của kstack: ba tầng xếp chồng kiểu isometric trên nền bo góc.
+"""Draw the kstack icon: three isometric slabs stacked on a rounded-square background.
 
-Chạy: python3 assets/make_icon.py   (cần Pillow; ghi đè assets/icon.png)
+Run: python3 assets/make_icon.py   (needs Pillow; overwrites assets/icon.png)
 """
 from pathlib import Path
 
 from PIL import Image, ImageDraw
 
 SIZE = 1024
-SCALE = 4  # vẽ to rồi thu nhỏ để cạnh mịn
+SCALE = 4  # draw large, then downscale for smooth edges
 S = SIZE * SCALE
 
 BG_TOP = (30, 27, 75)
 BG_BOTTOM = (49, 46, 129)
-# Từ dưới lên: hai tầng nền và một tầng nhấn trên cùng.
+# Bottom to top: two base slabs and an accent slab on top.
 LAYERS = [
     ((99, 102, 241), (67, 56, 202)),
     ((139, 92, 246), (109, 40, 217)),
@@ -36,7 +36,7 @@ def background() -> Image.Image:
 
 
 def slab(draw: ImageDraw.ImageDraw, cx: float, cy: float, top, side) -> None:
-    w, h, depth = S * 0.30, S * 0.15, S * 0.055  # nửa rộng, nửa cao của mặt trên, độ dày
+    w, h, depth = S * 0.30, S * 0.15, S * 0.055  # half-width and half-height of the top face, thickness
     north, east, south, west = (cx, cy - h), (cx + w, cy), (cx, cy + h), (cx - w, cy)
     draw.polygon([west, south, (south[0], south[1] + depth), (west[0], west[1] + depth)], fill=side)
     draw.polygon([south, east, (east[0], east[1] + depth), (south[0], south[1] + depth)], fill=tuple(max(c - 30, 0) for c in side))
@@ -52,7 +52,7 @@ def main() -> None:
         slab(draw, S / 2, base_y - i * step, top, side)
     out = Path(__file__).with_name("icon.png")
     img.resize((SIZE, SIZE), Image.LANCZOS).save(out)
-    print(f"đã ghi {out}")
+    print(f"wrote {out}")
 
 
 if __name__ == "__main__":

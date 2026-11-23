@@ -1,34 +1,38 @@
 # kstack
 
-Plugin Claude Code chứa workflow code cùng agent, học từ pstack của Lauren Tan (bản tham khảo: `github.com/cursor/plugins/tree/main/pstack`). File này là luật khi **sửa chính kstack**; nó không đi theo plugin tới người dùng.
+A Claude Code plugin holding a workflow for coding with agents, learned from Lauren Tan's pstack (reference: `github.com/cursor/plugins/tree/main/pstack`). This file holds the rules for **editing kstack itself**; it does not ship to plugin users.
 
-`~/.claude/skills/kstack` là symlink trỏ về repo này, nên Claude Code nạp kstack thành `kstack@skills-dir`. Sửa xong chạy `/reload-plugins`.
+`~/.claude/skills/kstack` is a symlink to this repo, so Claude Code loads kstack as `kstack@skills-dir`. Run `/reload-plugins` after editing.
 
-## Hai lớp
+## Language
 
-- **Lõi** (`in-your-own-words`, `sharpen`, `principle-*`): trung lập, không nhắc tên tool hay đường dẫn riêng của agent nào.
-- **Điều phối** (`kstack-mode` cùng `worker.md` và `playbooks/`, `agents/`): viết riêng cho Claude Code, dùng tên tool thật.
+Write everything in English: skills, agents, playbooks, docs, code comments and commit messages. `README.vi.md` is the one Vietnamese file; update it whenever `README.md` changes. Eval prompts may be in Vietnamese on purpose, to test Vietnamese input.
 
-## Viết skill
+## Two layers
 
-- Mỗi skill một ý, ngắn: principle khoảng 10 dòng, playbook dưới 25 dòng.
-- Mặc định `disable-model-invocation: true`. Skill đó không gọi được qua Skill tool, nên mode đọc nó bằng đường dẫn `${CLAUDE_SKILL_DIR}/../<tên>/SKILL.md`.
-- `${CLAUDE_SKILL_DIR}` và `$ARGUMENTS` chỉ được thay trong `SKILL.md`, không thay trong playbook hay `worker.md`.
-- Viết lại bằng lời của mình, không chép nguyên văn pstack. Đoạn nào chép thì phải kèm thông báo MIT của pstack.
-- Thêm principle mới thì thêm luôn một dòng vào mục lục trong `skills/kstack-mode/SKILL.md`.
-- Một lỗi agent lặp lại thì sửa bằng cấu trúc trước (giới hạn tool, luật cụ thể kèm cách thay thế), sau đó mới tới câu chữ. Ví dụ: verifier từng chạy `git checkout` nên giờ có luật cấm kèm cách thay thế.
+- **Core** (`in-your-own-words`, `sharpen`, `principle-*`): agent-neutral, with no tool names or agent-specific paths.
+- **Orchestration** (`kstack-mode` with its `worker.md` and `playbooks/`, plus `agents/`): written for Claude Code, using real tool names.
 
-## Kiểm tra trước khi commit
+## Writing skills
+
+- One idea per skill, kept short: about 10 lines for a principle, under 25 for a playbook.
+- Default to `disable-model-invocation: true`. The Skill tool refuses such skills, so the mode reads them by path: `${CLAUDE_SKILL_DIR}/../<name>/SKILL.md`.
+- `${CLAUDE_SKILL_DIR}` and `$ARGUMENTS` are substituted only in `SKILL.md`, not in playbooks or `worker.md`.
+- Rewrite ideas in your own words; do not copy pstack text. Anything copied must carry pstack's MIT notice.
+- A new principle also needs a line in the index in `skills/kstack-mode/SKILL.md`.
+- When an agent repeats a mistake, fix it with structure first (tool limits, a specific rule with an alternative), then wording. Example: the verifier once ran `git checkout`, so it now has an explicit ban with the alternative spelled out.
+
+## Checks before committing
 
 ```bash
-claude plugin validate .                        # cấu trúc hợp lệ
-claude plugin details kstack@skills-dir         # token tốn mỗi phiên (hiện khoảng 850)
-claude -p "/kstack:<skill> <task mẫu>"          # chạy thử một skill trong thư mục nháp
-claude plugin eval . --runs 2 --no-publish      # eval, có nhánh không-plugin để so
+claude plugin validate .                        # structure is valid
+claude plugin details kstack@skills-dir         # per-session token cost (about 850 now)
+claude -p "/kstack:<skill> <sample task>"       # try a skill from a scratch directory
+claude plugin eval . --runs 2 --no-publish      # evals, with a no-plugin baseline
 ```
 
-Sửa skill nào có eval thì chạy lại eval đó (`--case <tên>`). Điểm "có plugin" không được giảm.
+After changing a skill that has evals, rerun them (`--case <name>`). The with-plugin score must not drop.
 
-## Commit
+## Commits
 
-Commit nhỏ, mỗi commit một bước và để repo ở trạng thái chạy được. Danh tính repo là `KiRzEa <kietnt0603@gmail.com>`, đã đặt trong cấu hình git cục bộ. Không push khi chưa được đồng ý.
+Small commits, one step each, each leaving the repo working. The repo identity is `KiRzEa <kietnt0603@gmail.com>`, set in the local git config. Never push without a yes.
